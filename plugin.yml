@@ -1,0 +1,17 @@
+name: CommandSpy
+version: 1.0.0
+main: CommandSpy\Main
+api: 5.0.0
+author: ZyberPE
+
+commands:
+  commandspy:
+    description: Toggle command spy
+    usage: "/commandspy <on|off>"
+    aliases: [cs]
+    permission: command.spy
+
+permissions:
+  command.spy:
+    description: Allows player to use command spy
+    default: op
