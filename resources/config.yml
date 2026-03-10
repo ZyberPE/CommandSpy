@@ -1,0 +1,5 @@
+messages:
+  spy-enabled: "§aCommandSpy enabled."
+  spy-disabled: "§cCommandSpy disabled."
+  spy-format: "§7[CommandSpy] §e{player} §7ran: §f{command}"
+  no-permission: "§cYou do not have permission to use this."
