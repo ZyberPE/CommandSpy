@@ -1,5 +1,5 @@
 name: CommandSpy
-version: 1.0.1
+version: 1.0.2
 main: CommandSpy\Main
 api: 5.0.0
 author: ZyberPE
@@ -13,5 +13,4 @@ commands:
 
 permissions:
   command.spy:
-    description: Allows command spying
     default: op
