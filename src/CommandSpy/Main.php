@@ -4,10 +4,10 @@ namespace CommandSpy;
 
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
-use pocketmine\event\server\CommandEvent;
-use pocketmine\player\Player;
+use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\player\Player;
 
 class Main extends PluginBase implements Listener{
 
@@ -21,7 +21,7 @@ class Main extends PluginBase implements Listener{
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 
         if(!$sender instanceof Player){
-            $sender->sendMessage("Run this command in-game.");
+            $sender->sendMessage("Use this command in-game.");
             return true;
         }
 
@@ -55,29 +55,27 @@ class Main extends PluginBase implements Listener{
         return true;
     }
 
-    public function onCommandRun(CommandEvent $event) : void{
+    public function onPlayerCommand(PlayerCommandPreprocessEvent $event) : void{
 
-        $sender = $event->getSender();
-
-        if(!$sender instanceof Player){
-            return;
-        }
-
-        $command = $event->getCommand();
-        $playerName = $sender->getName();
+        $player = $event->getPlayer();
+        $command = $event->getMessage();
 
         $format = $this->getConfig()->getNested("messages.spy-format");
         $message = str_replace(
             ["{player}", "{command}"],
-            [$playerName, $command],
+            [$player->getName(), $command],
             $format
         );
 
-        foreach($this->getServer()->getOnlinePlayers() as $player){
+        // Send to console automatically
+        $this->getServer()->getLogger()->info(str_replace("§", "", $message));
 
-            if($player->hasPermission("command.spy") && isset($this->spyEnabled[$player->getName()])){
-                if($player->getName() !== $playerName){
-                    $player->sendMessage($message);
+        // Send to players with spy enabled
+        foreach($this->getServer()->getOnlinePlayers() as $staff){
+
+            if($staff->hasPermission("command.spy") && isset($this->spyEnabled[$staff->getName()])){
+                if($staff->getName() !== $player->getName()){
+                    $staff->sendMessage($message);
                 }
             }
 
