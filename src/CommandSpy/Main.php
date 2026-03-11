@@ -4,10 +4,10 @@ namespace CommandSpy;
 
 use pocketmine\plugin\PluginBase;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerChatEvent;
-use pocketmine\player\Player;
+use pocketmine\event\server\CommandEvent;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\player\Player;
 
 class Main extends PluginBase implements Listener{
 
@@ -21,7 +21,7 @@ class Main extends PluginBase implements Listener{
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
 
         if(!$sender instanceof Player){
-            $sender->sendMessage("Run this command in-game.");
+            $sender->sendMessage("Use this command in-game.");
             return true;
         }
 
@@ -35,52 +35,37 @@ class Main extends PluginBase implements Listener{
             return true;
         }
 
-        switch(strtolower($args[0])){
+        if(strtolower($args[0]) === "on"){
+            $this->spyEnabled[$sender->getName()] = true;
+            $sender->sendMessage($this->getConfig()->getNested("messages.spy-enabled"));
+        }
 
-            case "on":
-                $this->spyEnabled[$sender->getName()] = true;
-                $sender->sendMessage($this->getConfig()->getNested("messages.spy-enabled"));
-            break;
-
-            case "off":
-                unset($this->spyEnabled[$sender->getName()]);
-                $sender->sendMessage($this->getConfig()->getNested("messages.spy-disabled"));
-            break;
+        if(strtolower($args[0]) === "off"){
+            unset($this->spyEnabled[$sender->getName()]);
+            $sender->sendMessage($this->getConfig()->getNested("messages.spy-disabled"));
         }
 
         return true;
     }
 
-    public function onChat(PlayerChatEvent $event) : void{
+    public function onCommandEvent(CommandEvent $event) : void{
 
-        $msg = $event->getMessage();
+        $sender = $event->getSender();
+        $command = $event->getCommand();
 
-        // Only detect commands
-        if(str_starts_with($msg, "/")){
+        $name = $sender instanceof Player ? $sender->getName() : "Console";
 
-            $player = $event->getPlayer();
+        $msg = "[CommandSpy] {$name} ran: /{$command}";
 
-            $format = $this->getConfig()->getNested("messages.spy-format");
+        // Console always sees
+        $this->getLogger()->info($msg);
 
-            $message = str_replace(
-                ["{player}", "{command}"],
-                [$player->getName(), $msg],
-                $format
-            );
+        foreach($this->getServer()->getOnlinePlayers() as $player){
 
-            // Console always sees
-            $this->getLogger()->info($player->getName() . " ran: " . $msg);
-
-            foreach($this->getServer()->getOnlinePlayers() as $staff){
-
-                if($staff->hasPermission("command.spy") && isset($this->spyEnabled[$staff->getName()])){
-                    
-                    if($staff->getName() !== $player->getName()){
-                        $staff->sendMessage($message);
-                    }
-
-                }
+            if(isset($this->spyEnabled[$player->getName()]) && $player->hasPermission("command.spy")){
+                $player->sendMessage("§7[CommandSpy] §e{$name} §7ran: §f/{$command}");
             }
+
         }
     }
 }
