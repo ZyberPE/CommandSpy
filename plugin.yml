@@ -1,5 +1,5 @@
 name: CommandSpy
-version: 1.0.2
+version: 1.0.3
 main: CommandSpy\Main
 api: 5.0.0
 author: ZyberPE
